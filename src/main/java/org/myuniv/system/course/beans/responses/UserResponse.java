@@ -4,6 +4,7 @@ public class UserResponse {
     private String userName;
     private String email;
     private String userId;
+    private String type;
 
     public String getUserName() {
         return userName;
@@ -27,5 +28,13 @@ public class UserResponse {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

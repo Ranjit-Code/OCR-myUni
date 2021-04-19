@@ -10,7 +10,10 @@ import org.myuniv.system.course.services.CoursesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service public class CoursesServiceImpl implements CoursesService {
 
@@ -70,6 +73,22 @@ import java.util.Optional;
         CourseDto returnValue = mapper.map(course.get(), CourseDto.class);
 
         return returnValue;
+    }
+
+
+    @Override public List<CourseDto> retrieveCourses() {
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+        List<CourseEntity> courses = (ArrayList<CourseEntity>) coursesRepository.findAll();
+
+
+        List<CourseDto> dtos = courses
+                .stream()
+                .map(user -> mapper.map(user, CourseDto.class))
+                .collect(Collectors.toList());
+
+        return dtos;
     }
 
     @Override public void deleteCourse(Long courseId) {

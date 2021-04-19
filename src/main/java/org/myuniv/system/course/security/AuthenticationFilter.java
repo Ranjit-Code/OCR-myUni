@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
@@ -43,9 +44,9 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return getAuthenticationManager().authenticate(
-            new UsernamePasswordAuthenticationToken(credentials.getEmail(), credentials.getPassword(),
-                new ArrayList<>()));
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(credentials.getEmail(), credentials.getPassword(),
+                new ArrayList<>());
+        return getAuthenticationManager().authenticate(authentication);
     }
 
     @Override
@@ -54,10 +55,11 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         String userName = ((User) authResult.getPrincipal()).getUsername();
         UserDto userDetails = usersService.getUserDetailsByEmail(userName);
 
-        String token = Jwts.builder().setSubject(userDetails.getUserId()).setExpiration(
-            new Date(System.currentTimeMillis() + Long.parseLong(environment.getProperty("token.expiration_time"))))
+        Date expireDate = new Date(System.currentTimeMillis() + Long.parseLong(environment.getProperty("token.expiration_time")));
+        String token = Jwts.builder().setSubject(userDetails.getUserId()).setExpiration(expireDate)
             .signWith(SignatureAlgorithm.HS512, environment.getProperty("token.secret")).compact();
 
+        response.addHeader("Access-Control-Expose-Headers", "token");
         response.addHeader("token", token);
         response.addHeader("userId", userDetails.getUserId());
     }

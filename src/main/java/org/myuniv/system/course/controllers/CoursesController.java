@@ -13,6 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController @RequestMapping("/courses") public class CoursesController {
 
     @Autowired CoursesService coursesService;
@@ -45,6 +48,25 @@ import org.springframework.web.bind.annotation.*;
         CourseDto createdCourse = coursesService.updateCourse(courseDto);
 
         CourseResponse returnValue = modelMapper.map(createdCourse, CourseResponse.class);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(returnValue);
+    }
+
+    @GetMapping(value = "", consumes = {MediaType.APPLICATION_JSON_VALUE,
+        MediaType.APPLICATION_XML_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE,
+        MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<List<CourseResponse>> ViewCourses() {
+
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+        List<CourseDto> courses = coursesService.retrieveCourses();
+
+
+        List<CourseResponse> returnValue = courses.stream()
+                .map(course->modelMapper.map(course, CourseResponse.class))
+                .collect(Collectors.toList());
+
+
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(returnValue);
     }
 
